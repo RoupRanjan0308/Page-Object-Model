@@ -1,0 +1,1389 @@
+package aig.workday.library;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.io.FileUtils;
+import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.Keys;
+import org.openqa.selenium.NoAlertPresentException;
+import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.WebDriverException;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.Select;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import com.relevantcodes.extentreports.ExtentTest;
+
+import aig.workday.config.Reporter;
+
+public class GenericWrapper extends Reporter implements Wrapper {
+
+	public GenericWrapper(RemoteWebDriver driver, ExtentTest test) {
+		this.driver = driver;
+		this.test = test;
+	}
+
+	public RemoteWebDriver driver;
+	protected static Properties prop;
+	public String primryWindowHandle, sUrl,userName,passWord,startProxyText,actAsHRSSProcessorID,actAsHRSSProcessor,actAsHRSSApproverID,
+				  actAsHRSSApprover,actAsLocalHRID,actAsLocalHR;
+	public WebDriverWait wait;
+	public JavascriptExecutor jse;
+
+	public GenericWrapper() {
+		prop = new Properties();
+
+		try {
+			prop.load(new FileInputStream(new File("./resources/config.properties")));
+			sUrl = prop.getProperty("URL");
+			userName = prop.getProperty("Username");
+			passWord = prop.getProperty("Password");
+			/*startProxyText = prop.getProperty("StartProxyText");
+			actAsHRSSProcessorID = prop.getProperty("ActAsHRSSProcessorID");
+			actAsHRSSProcessor = prop.getProperty("ActAsHRSSProcessor");
+			actAsHRSSApproverID = prop.getProperty("ActAsHRSSApproverID");
+			actAsHRSSApprover = prop.getProperty("ActAsHRSSApprover");
+			actAsLocalHRID = prop.getProperty("ActAsLocalHRID");
+			actAsLocalHR = prop.getProperty("ActAsLocalHR");*/
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void loadObjects() {
+		prop = new Properties();
+		try {
+			prop.load(new FileInputStream(new File("./resources/object.properties")));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void unloadObjects() {
+		prop = null;
+	}
+
+	/**
+	 * ========================================================================================================================================
+	 * METHOD TO LAUCNH THE BROWSER AND LOAD URL
+	 */
+
+	@Override
+	public void invokeApp(String browser) {
+		try {
+			if (browser.equalsIgnoreCase("chrome")) {
+				System.setProperty("webdriver.chrome.driver", "./drivers/chromedriver.exe");
+				ChromeOptions option = new ChromeOptions();
+				option.addArguments("disable-infobars");
+				driver = new ChromeDriver(option);
+				
+			} else if (browser.equalsIgnoreCase("firefox")) {
+				System.setProperty("webdriver.gecko.driver", "./drivers/geckodriver.exe");
+				driver = new FirefoxDriver();
+			} else if (browser.equalsIgnoreCase("IE")) {
+				System.setProperty("webdriver.ie.driver", "./drivers/IEDriverServer.exe");
+				driver = new FirefoxDriver();
+			}
+			driver.manage().deleteAllCookies();
+			driver.manage().window().maximize();
+			driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+			driver.manage().timeouts().pageLoadTimeout(30, TimeUnit.SECONDS);
+			driver.get(sUrl);
+			primryWindowHandle = driver.getWindowHandle();
+			reportStep("The Browser: " + browser + "launched successfully", "PASS");
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			reportStep("The Browser: " + browser + " could not be launched", "FAIL");
+		}
+	}
+
+	/**
+	 * ========================================================================================================================================
+	 * METHODS TO ENTER VALUE TO TEXT INPUT FIELD BY DIFFERENT LOCATORS
+	 */
+
+	@Override
+	public void enterById(String idValue, String data) {
+		try {
+			driver.findElement(By.id(idValue)).clear();
+			driver.findElement(By.id(idValue)).sendKeys(data);
+			reportStep("The data: " + data + " entered successfully in the field : " + idValue, "PASS");
+		} catch (NoSuchElementException e) {
+			reportStep("The data: " + data + " could not be entered in the field : " + idValue, "FAIL");
+		} catch (Exception e) {
+			reportStep("Unknown exception occured while entering " + data + " in the field : " + idValue, "FAIL");
+		}
+	}
+
+	@Override
+	public void enterByClassName(String classNameValue, String data) {
+		try {
+			driver.findElement(By.className(classNameValue)).clear();
+			driver.findElement(By.className(classNameValue)).sendKeys(data);
+			reportStep("The data: " + data + " entered successfully in the field : " + classNameValue, "PASS");
+		} catch (NoSuchElementException e) {
+			reportStep("The data: " + data + " could not be entered in the field : " + classNameValue, "FAIL");
+		} catch (Exception e) {
+			reportStep("Unknown exception occured while entering " + data + " in the field : " + classNameValue,
+					"FAIL");
+		}
+	}
+
+	@Override
+	public void enterByName(String nameValue, String data) {
+		try {
+			driver.findElement(By.name(nameValue)).clear();
+			driver.findElement(By.name(nameValue)).sendKeys(data);
+			reportStep("The data: " + data + " entered successfully in the field : " + nameValue, "PASS");
+		} catch (NoSuchElementException e) {
+			reportStep("The data: " + data + " could not be entered in the field : " + nameValue, "FAIL");
+		} catch (Exception e) {
+			reportStep("Unknown exception occured while entering " + data + " in the field : " + nameValue, "FAIL");
+		}
+	}
+
+	@Override
+	public void enterByXpath(String xpathValue, String data) {
+		try {
+			//waitUntilVisibilityOfElementLocatedByXpath(xpathValue);
+			driver.findElement(By.xpath(xpathValue)).clear();
+			driver.findElement(By.xpath(xpathValue)).sendKeys(data);
+			reportStep("The data: " + data + " entered successfully in the field : " + xpathValue, "PASS");
+		} catch (NoSuchElementException e) {
+			reportStep("The data: " + data + " could not be entered in the field : " + xpathValue, "FAIL");
+		} catch (Exception e) {
+			reportStep("Unknown exception occured while entering " + data + " in the field : " + xpathValue, "FAIL");
+		}
+	}
+
+	public void enterByXpathAndENTER(String xpathValue, String data) {
+		try {
+			driver.findElement(By.xpath(xpathValue)).clear();
+			//waitUntilVisibilityOfElementLocatedByXpath(xpathValue);
+			driver.findElement(By.xpath(xpathValue)).sendKeys(data, Keys.ENTER);
+			driver.findElement(By.xpath(xpathValue)).sendKeys(Keys.ENTER);
+			reportStep("The data: " + data + " entered successfully in the field : " + xpathValue, "PASS");
+		} catch (NoSuchElementException e) {
+			reportStep("The data: " + data + " could not be entered in the field : " + xpathValue, "FAIL");
+		} catch (Exception e) {
+			reportStep("Unknown exception occured while entering " + data + " in the field : " + xpathValue, "FAIL");
+		}
+	}
+	public void enterByXpathWaitAndENTER(String xpathValue, String data) {
+		try {
+			driver.findElement(By.xpath(xpathValue)).clear();
+			//waitUntilVisibilityOfElementLocatedByXpath(xpathValue);
+			driver.findElement(By.xpath(xpathValue)).sendKeys(data, Keys.ENTER);
+			Thread.sleep(2000);
+			driver.findElement(By.xpath(xpathValue)).sendKeys(Keys.ENTER);
+			reportStep("The data: " + data + " entered successfully in the field : " + xpathValue, "PASS");
+		} catch (NoSuchElementException e) {
+			reportStep("The data: " + data + " could not be entered in the field : " + xpathValue, "FAIL");
+		} catch (Exception e) {
+			reportStep("Unknown exception occured while entering " + data + " in the field : " + xpathValue, "FAIL");
+		}
+	}
+	
+	public void clearAndWaitEnterByXpath(String xpathValue, String data) {
+		try {
+			//Thread.sleep(2000);
+			driver.findElement(By.xpath(xpathValue)).sendKeys(Keys.CONTROL,"a");
+			//Thread.sleep(2000);
+			driver.findElement(By.xpath(xpathValue)).sendKeys(Keys.DELETE);
+			//Thread.sleep(2000);
+			driver.findElement(By.xpath(xpathValue)).sendKeys(data);
+			reportStep("The data: " + data + " entered successfully in the field : " + xpathValue, "PASS");
+		} catch (NoSuchElementException e) {
+			reportStep("The data: " + data + " could not be entered in the field : " + xpathValue, "FAIL");
+		} catch (Exception e) {
+			reportStep("Unknown exception occured while entering " + data + " in the field : " + xpathValue, "FAIL");
+		}
+	}
+	
+	public void clearTextByXpath(String xpathValue) {
+		try {
+			driver.findElement(By.xpath(xpathValue)).clear();			
+			reportStep("The text value at :" + xpathValue + " has been cleared ", "PASS");
+		} catch (Exception e) {
+			reportStep("The text value at :" + xpathValue + " has not been cleared ", "FAIL");
+		}
+	}
+	
+	
+	/**
+	 * ========================================================================================================================================
+	 * METHODS TO CLICK BY DIFFERENT LOCATORS
+	 */
+	
+
+	@Override
+	public void clickById(String idValue) {
+		try {
+			driver.findElement(By.id(idValue)).click();
+			reportStep("The element with id :" + idValue + " is clicked", "PASS");
+		} catch (Exception e) {
+			reportStep("The element with id :" + idValue + "  could not be clicked", "FAIL");
+		}
+	}
+
+	@Override
+	public void clickByClassName(String classNameValue) {
+		try {
+			driver.findElement(By.className(classNameValue)).click();
+			reportStep("The element with id :" + classNameValue + " is clicked", "PASS");
+		} catch (Exception e) {
+			reportStep("The element with id :" + classNameValue + "  could not be clicked", "FAIL");
+		}
+	}
+
+	@Override
+	public void clickByName(String nameValue) {
+		try {
+			driver.findElement(By.name(nameValue)).click();
+			reportStep("The element with id :" + nameValue + " is clicked", "PASS");
+		} catch (Exception e) {
+			reportStep("The element with id :" + nameValue + "  could not be clicked", "FAIL");
+		}
+	}
+
+	@Override
+	public void clickBylinkText(String linkTextValue) {
+		try {
+			driver.findElement(By.linkText(linkTextValue)).click();
+			reportStep("The element with id :" + linkTextValue + " is clicked", "PASS");
+		} catch (Exception e) {
+			reportStep("The element with id :" + linkTextValue + "  could not be clicked", "FAIL");
+		}
+	}
+
+	@Override
+	public void clickByXpath(String xpathValue) {
+		try {
+			//waitUntilElementToBeClickableLocatedByXpath(xpathValue);
+			Thread.sleep(2000);
+			driver.findElement(By.xpath(xpathValue)).click();
+			reportStep("The element with id :" + xpathValue + " is clicked", "PASS");
+		} catch (Exception e) {
+			reportStep("The element with id :" + xpathValue + "  could not be clicked", "FAIL");
+		}
+	}
+	
+
+	public void waitAndClickByXpath(String xpathValue) {
+		try {
+			wait= new WebDriverWait(driver, 20);
+			wait.until(ExpectedConditions.elementToBeClickable(By.xpath(xpathValue)));			
+			Thread.sleep(2000);			
+			driver.findElement(By.xpath(xpathValue)).click();
+			reportStep("The element with id :" + xpathValue + " is clicked", "PASS");
+		} catch (Exception e) {
+			reportStep("The element with id :" + xpathValue + "  could not be clicked", "FAIL");
+		}
+	}
+	
+	public void clickByJavascriptExecutorXpath(String xpathValue) {
+		try {
+			
+			Thread.sleep(2000);
+			WebElement element = driver.findElement(By.xpath(xpathValue));
+			//jse = (JavascriptExecutor)driver;
+			//jse.executeScript("document.getElementByXpath(\"(//div[@data-automation-id=\"datePickerButton\"]/div)[1]\").focus();");
+			((JavascriptExecutor)driver).executeScript("arguments[0].click();", element); // remove double quote or define an element variable
+			reportStep("The element with id :" + xpathValue + " is clicked", "PASS");
+		} catch (Exception e) {
+			reportStep("The element with id :" + xpathValue + "  could not be clicked", "FAIL");
+		}
+	}
+	
+	/**
+	 * ========================================================================================================================================
+	 * METHODS TO VERIFY THE TITLE OF THE CURRENT PAGE
+	 */
+
+	@Override
+	public boolean verifyTitle(String title) {
+		boolean bReturn = false;
+		try {
+			if (driver.getTitle().equalsIgnoreCase(title)) {
+				reportStep("The title of the page matches with the value " + title, "PASS");
+				bReturn = true;
+			} else {
+				reportStep("The title of the page: " + driver.getTitle() + "  didn't match with the value " + title,
+						"SUCCESS");
+			}
+		} catch (Exception e) {
+			reportStep("Unknown exception occured while verifying the title ", "FAIL");
+		}
+		return bReturn;
+	}
+	
+	public boolean verifyTitleContains(String title) {
+		boolean bReturn = false;
+		try {
+			if (driver.getTitle().contains(title)) {
+				reportStep("The title of the page matches with the value " + title, "PASS");
+				bReturn = true;
+			} else {
+				reportStep("The title of the page: " + driver.getTitle() + "  didn't match with the value " + title,
+						"SUCCESS");
+			}
+		} catch (Exception e) {
+			reportStep("Unknown exception occured while verifying the title ", "FAIL");
+		}
+		return bReturn;
+	}
+	
+	
+	
+	/**
+	 * ========================================================================================================================================
+	 * METHODS TO VERIFY TEXT BY DIFFERENT LOCATORS
+	 */
+
+	@Override
+	public void verifyTextById(String idValue, String text) {
+		try {
+			String sText = driver.findElement(By.id(idValue)).getText();
+			if (sText.equalsIgnoreCase(text)) {
+				reportStep("The text: " + sText + " matches with the value " + text, "PASS");
+			} else {
+				reportStep("The text: " + sText + " didn't match with the value " + text, "FAIL");
+			}
+		} catch (Exception e) {
+			reportStep("Unknown exception occured while verifying the text ", "FAIL");
+		}
+	}
+
+	@Override
+	public void verifyTextByXpath(String xpathValue, String text) {
+		try {
+			String sText = driver.findElement(By.xpath(xpathValue)).getText();
+			if (sText.equalsIgnoreCase(text)) {
+				reportStep("The text: " + sText + " matches with the value " + text, "PASS");
+			} else {
+				reportStep("The text: " + sText + " didn't match with the value " + text, "FAIL");
+			}
+		} catch (Exception e) {
+			reportStep("Unknown exception occured while verifying the text ", "FAIL");
+		}
+	}
+
+	@Override
+	public void verifyTextContainsByXpath(String xpathValue, String text) {
+		try {
+			String sText = driver.findElement(By.xpath(xpathValue)).getText();
+			if (sText.contains(text)) {
+				reportStep("The text: " + sText + " contains the value " + text, "PASS");
+			} else {
+				reportStep("The text: " + sText + " didn't contain the value " + text, "FAIL");
+			}
+		} catch (Exception e) {
+			reportStep("Unknown exception occured while verifying the text ", "FAIL");
+		}
+	}
+
+	@Override
+	public void verifyTextContainsById(String idValue, String text) {
+		try {
+			String sText = driver.findElement(By.id(idValue)).getText();
+			if (sText.contains(text)) {
+				reportStep("The text: " + sText + " contains the value " + text, "PASS");
+			} else {
+				reportStep("The text: " + sText + " didn't contain the value " + text, "FAIL");
+			}
+		} catch (Exception e) {
+			reportStep("Unknown exception occured while verifying the text ", "FAIL");
+		}
+	}
+	
+	/**
+	 * ========================================================================================================================================
+	 * METHODS TO GET THE TEXT VALUE FROM WEBELEMENTS BY DIFEERENT LOCATORS
+	 */	
+
+	@Override
+	public String getTextById(String idValue) {
+		String bReturn = "";
+		try {
+			bReturn = driver.findElementById(idValue).getText();
+		} catch (Exception e) {
+			reportStep("The element with id " + idValue + " couldn't be found", "FAIL");
+		}
+		return bReturn;
+	}
+
+	@Override
+	public String getTextByXapth(String xpathValue) {
+		String bReturn = "";
+		try {
+			bReturn = driver.findElementByXPath(xpathValue).getText();
+			reportStep("the text" + bReturn + " found in the element with xpath " + xpathValue, "PASS");
+		} catch (Exception e) {
+			reportStep("The element with xPath " + xpathValue + " couldn't be found ", "FAIL");
+		}
+		return bReturn;
+	}
+	
+	public String getDigitsFromStringByXapth(String xpathValue) {
+		String bReturn = "";
+		try {
+			bReturn = driver.findElementByXPath(xpathValue).getText();
+			String digits = bReturn.substring(bReturn.indexOf("(")+1,bReturn.indexOf(")"));
+			reportStep("The ID  < " + digits + " > found in the element with xpath " + xpathValue, "PASS");
+		} catch (Exception e) {
+			reportStep("The element with xPath " + xpathValue + " couldn't be found ", "FAIL");
+		}
+		return bReturn;
+	}
+	
+	/**
+	 * ========================================================================================================================================
+	 * METHODS TO SELECT THE DROP DOWN VALUE BY DIFFERENT TECHNIQUES USING SELECT CLASS
+	 */	
+
+	@Override
+	public void selectVisibleTextById(String idValue, String data) {
+		try {
+			new Select(driver.findElement(By.id(idValue))).selectByVisibleText(data);
+			reportStep("The element with id " + idValue + " is selected with value " + data, "PASS");
+		} catch (Exception e) {
+			reportStep("the value :" + data + "couldn't be selected", "FAIL");
+		}
+	}
+
+	@Override
+	public void selectIndexById(String idValue, String data) {
+		try {
+			new Select(driver.findElement(By.id(idValue))).selectByIndex((Integer.parseInt(data)));
+			reportStep("The element with id " + idValue + " is selected with value " + data, "PASS");
+		} catch (Exception e) {
+			reportStep("the value :" + data + "couldn't be selected", "FAIL");
+		}
+	}
+
+	@Override
+	public void selectIndexByXpath(String xpathValue, String data) {
+		try {
+			new Select(driver.findElement(By.id(xpathValue))).selectByIndex((Integer.parseInt(data)));
+			reportStep("The element with id " + xpathValue + " is selected with value " + data, "PASS");
+		} catch (Exception e) {
+			reportStep("the value :" + data + "couldn't be selected", "FAIL");
+		}
+	}
+	
+	/**
+	 * ========================================================================================================================================
+	 * METHODS TO SWITCH TO DIFFERENT WINDOWS WINDOWS
+	 */	
+
+	@Override
+	public void SwitchToParentWindow() {
+		try {
+			Set<String> winhandles = driver.getWindowHandles();
+			for (String wHandle : winhandles) {
+				driver.switchTo().window(wHandle);
+				reportStep("The window switched to the last window", "PASS");
+				break;
+			}
+		} catch (Exception e) {
+			reportStep("The window couldn't be switch to the last window", "FAIL");
+		}
+	}
+
+	@Override
+	public void SwitchToLasttWindow() {
+		try {
+			Set<String> winhandles = driver.getWindowHandles();
+			for (String wHandle : winhandles) {
+				driver.switchTo().window(wHandle);
+				reportStep("The window switched to the last window", "PASS");
+			}
+		} catch (Exception e) {
+			reportStep("The window couldn't be switch to the last window", "FAIL");
+		}
+	}
+	
+	/**
+	 * ========================================================================================================================================
+	 * METHODS TO INTERACT WITH ALERTS
+	 */	
+
+	@Override
+	public void acceptAlert() {
+		try {
+			driver.switchTo().alert().accept();
+			reportStep("The alert has been accepted ", "PASS");
+		} catch (NoAlertPresentException e) {
+			reportStep("The alert couldn't be found", "FAIL");
+		} catch (Exception e) {
+			reportStep("The alert couldn't be accepted", "FAIL");
+		}
+	}
+
+	@Override
+	public void getAlertText() {
+		try {
+			String text = driver.switchTo().alert().getText();
+			reportStep("The text present in the alert and it is : " + text, "PASS");
+		} catch (NoAlertPresentException e) {
+			reportStep("The alert couldn't be found", "FAIL");
+		} catch (Exception e) {
+			reportStep("The alert couldn't be accepted", "FAIL");
+		}
+	}
+
+	@Override
+	public void dismissAlert() {
+		try {
+			driver.switchTo().alert().dismiss();
+			reportStep("The alert has been dismissed", "PASS");
+		} catch (NoAlertPresentException e) {
+			reportStep("The alert couldn't be found", "FAIL");
+		} catch (Exception e) {
+			reportStep("The alert couldn't be accepted", "FAIL");
+		}
+	}
+	
+	/**
+	 * ========================================================================================================================================
+	 * METHODS TO CLOSE THE CURRENT BROWSER INTSANCE
+	 */	
+
+	@Override
+	public void quiteBrowser() {
+		try {
+			driver.quit();
+		} catch (Exception e) {
+			reportStep("The browser  :" + driver.getCapabilities().getBrowserName() + " could not be closed", "FAIL");
+		}
+	}
+	
+	/**
+	 * ========================================================================================================================================
+	 * METHODS TO USE DIFFRENT ADVANCED ACTIONS  USING ACTIONS CLASS
+	 */	
+
+	@Override
+	public void mouseOverByLinkText(String linkTextValue) {
+		try {
+			Actions builder = new Actions(driver);
+			builder.moveToElement(driver.findElement(By.linkText(linkTextValue))).build().perform();
+			reportStep("The mouseover by linktext : " + linkTextValue + " is performed", "PASS");
+		} catch (Exception e) {
+			reportStep("The mouseover by linktext : " + linkTextValue + " couldn't be performed", "FAIL");
+		}
+	}
+
+	@Override
+	public void mouseOverByXpath(String xpathValue) {
+		try {
+			Actions builder = new Actions(driver);
+			Thread.sleep(1000);
+			builder.moveToElement(driver.findElement(By.xpath(xpathValue))).build().perform();
+			reportStep("The mouseover by xpath : " + xpathValue + " is performed", "PASS");
+		} catch (Exception e) {
+			reportStep("The mouseover by xpath : " + xpathValue + " couldn't be performed", "FAIL");
+		}
+	}
+	
+	public void mouseOverAndClickByXpath(String xpathValue) {
+		try {
+			Actions builder = new Actions(driver);
+			builder.moveToElement(driver.findElement(By.xpath(xpathValue))).build().perform();
+			Thread.sleep(1000);
+			driver.findElement(By.xpath(xpathValue)).click();
+			reportStep("The mouseover by Xpath and click on : " + xpathValue + " is performed", "PASS");
+		} catch (Exception e) {
+			reportStep("The mouseover by xpath and click on : " + xpathValue + " couldn't be performed", "FAIL");
+		}
+	}
+	
+	/**
+	 * ========================================================================================================================================
+	 * METHODS TO TAKE SCREENSHOT
+	 */	
+
+	
+	
+	@Override
+	public long takeSnap() {
+		long number = (long) (Math.floor(Math.random() * 90000000L) + 1000000L);
+		try {
+			File srcFile = driver.getScreenshotAs(OutputType.FILE);
+			File destFile = new File("./Screenshot/" + number + ".jpg");
+
+			FileUtils.copyFile(srcFile, destFile);
+
+		} catch (WebDriverException e) {
+			reportStep("The browser has been closed .", "FAIL");
+		} catch (Exception e) {
+			reportStep("The Snapshot couldn't be taken ", "WARN");
+		}
+		return number;
+	}
+
+	/**
+	 * ==================================================================================================================================================
+	 * IMPLEMENTAION OF WAITS
+	 */
+	public void waitUntilTheTitileIs(String title) {
+		try {
+			wait = new WebDriverWait(driver, 20);
+			wait.until(ExpectedConditions.titleIs(title));
+		} catch (Exception e) {
+						e.printStackTrace();
+		}
+	}
+
+	public void waitUntilTextPresentIntheElementByXpath(String xpathValue, String textValue) {
+		try {
+			wait = new WebDriverWait(driver, 10);
+			WebElement textPresentelement = driver.findElement(By.xpath(xpathValue));
+			wait.until(ExpectedConditions.textToBePresentInElement(textPresentelement, textValue));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void waitUntilPresenceOfElementLocatedByXpath(String xpathValue) {
+		try {
+			wait = new WebDriverWait(driver, 10);
+			wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath(xpathValue)));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void waitUntilElementToBeClickableLocatedByXpath(String xpathValue) {
+		try {
+			wait = new WebDriverWait(driver, 10);
+			wait.until(ExpectedConditions.elementToBeClickable(By.xpath(xpathValue)));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void waitUntilTextToBeLocatedByXpath(String xpathValue, String textValue) {
+		try {
+			wait = new WebDriverWait(driver, 20);
+			wait.until(ExpectedConditions.textToBe(By.xpath(xpathValue), textValue));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	public void waitUntilVisibilityOfElementLocatedByXpath(String xpathValue) {
+		try {
+			wait = new WebDriverWait(driver, 10);
+			wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(xpathValue)));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	public void waitUntilTheTitileContains(String title) {
+		try {
+			wait = new WebDriverWait(driver, 20);
+			wait.until(ExpectedConditions.titleContains(title));
+		} catch (Exception e) {
+						e.printStackTrace();
+		}
+	}
+	
+	public void fixedWait(int timeVal) {
+		try {
+			Thread.sleep(timeVal);
+		} catch (Exception e) {
+		}
+	}
+	
+	/*public void waitUntil() {
+		try {
+			wait = new WebDriverWait(driver, 10);
+			wait.until(ExpectedConditions.);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}*/
+	
+
+	/**
+	 * ==================================================================================================================================================
+	 * METHODS TO SCROLL DOWN AND UP IN A WEB PAGE
+	 */
+	
+	// now execute query which actually will scroll until that element is not appeared on page.
+	public void scrollIntoViewByXpath(String xpathValue)
+	{
+		try {
+			jse = (JavascriptExecutor) driver;
+			WebElement element = driver.findElement(By.xpath(xpathValue));
+			jse.executeScript("arguments[0].scrollIntoView(true);", element);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
+	public void scrollIntoViewByElement(WebElement resElement)
+	{
+		try {
+			jse = (JavascriptExecutor) driver;
+			jse.executeScript("arguments[0].scrollIntoView(true);", resElement);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
+
+	public void scrollWithSize(int val) {
+		
+		try {
+			jse = (JavascriptExecutor) driver;
+			jse.executeScript("scroll(0,"+val+")");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
+	/*******************************************METHODS TO INTERACT WITH CALENDAR*******************************************/
+	//FOR WEEKDAYS DATE		
+	public void selectWeekDaysDate(String enteredDate) {
+		try {
+			String month_year, day, calendar_month;
+			int entered_year, entered_month, calendar_year, year_difference, calendar_month_number, month_difference;
+
+			String nextXpath = "//div[@class='datePickerNextButton datePickerNextButton-up']/div[@data-automation-id='icon']";
+			String nextButtonXpath = "//div[@class='datePickerNextButton datePickerNextButton-up-hovering']/div[@data-automation-id='icon']";
+			String prevXpath = "//div[@class='datePickerPreviousButton datePickerPreviousButton-up']/div[@data-automation-id='icon']";
+			String prevButtonXpath = "//div[@class='datePickerPreviousButton datePickerPreviousButton-up-hovering']/div[@data-automation-id='icon']";
+			String dateXpath = "//table[@class='datePickerDays']/tbody/tr/td/div[@class='datePickerDay ']";
+			String monthYearXpath = "//td[@class='datePickerMonth']";
+			String todayDateXpath = "//div[@class='datePickerDay  datePickerDayIsToday  datePickerDayIsValue ']";
+
+			WebDriverWait wait = new WebDriverWait(driver, 20);
+			Actions builder = new Actions(driver);
+
+			Date d = new Date(enteredDate);
+			SimpleDateFormat dt = new SimpleDateFormat("d/MMMM/yyyy");
+			String date_entered = dt.format(d);
+			String[] splitter = date_entered.split("/");
+			String[] splitter_or = enteredDate.split("/");
+
+			day = splitter[0];
+			entered_year = Integer.parseInt(splitter[2]);
+			entered_month = Integer.parseInt(splitter_or[0]);
+			month_year = splitter[1] + " " + splitter[2];
+
+			String actual_month = driver.findElement(By.xpath(monthYearXpath)).getText();
+			String split2[] = actual_month.split(" ");
+			calendar_year = Integer.parseInt(split2[1]);
+			calendar_month = split2[0];
+
+			year_difference = calendar_year - entered_year;
+
+			Date date1 = new SimpleDateFormat("MMMM").parse(calendar_month);
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(date1);
+			calendar_month_number = cal.get(Calendar.MONTH) + 1;
+
+			month_difference = calendar_month_number - entered_month;
+
+			if (year_difference != 0) {
+				if (year_difference > 0) {
+					builder.moveToElement(driver.findElement(By.xpath(prevXpath))).build().perform();
+					while (true) {
+						driver.findElement(By.xpath(prevButtonXpath)).click();
+						if (month_year.equals(driver.findElement(By.xpath(monthYearXpath)).getText())) {
+							wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.xpath(dateXpath)));
+							List<WebElement> dates = driver.findElements(By.xpath(dateXpath));
+							for (WebElement date : dates) {
+								if (date.getAttribute("innerHTML").equals(day)) {
+									date.click();
+									break;
+								}
+							}
+							break;
+						}
+					}
+				} else if (year_difference < 0) {
+					//builder.moveToElement(driver.findElement(By.xpath(nextXpath))).build().perform();
+					while (true) {
+						builder.moveToElement(driver.findElement(By.xpath("(//td[text()='S'])[2]"))).build().perform();
+						builder.moveToElement(driver.findElement(By.xpath(nextXpath))).build().perform();
+						driver.findElement(By.xpath(nextButtonXpath)).click();
+						if (month_year.equals(driver.findElement(By.xpath(monthYearXpath)).getText())) {
+							wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.xpath(dateXpath)));
+							List<WebElement> dates = driver.findElements(By.xpath(dateXpath));
+							for (WebElement date : dates) {
+								if (date.getAttribute("innerHTML").equals(day)) {
+									date.click();
+									break;
+								}
+							}
+							break;
+						}
+					}
+				}
+			} else {
+				if (month_difference == 0) {
+					if (enteredDate.equals(new SimpleDateFormat("MM/dd/YYYY").format(new Date()))) {						
+						wait = new WebDriverWait(driver, 10);
+						wait.until(ExpectedConditions.elementToBeClickable(By.xpath(todayDateXpath)));
+						driver.findElement(By.xpath(todayDateXpath)).click();
+					}				
+					else if (month_year.equals(driver.findElement(By.xpath(monthYearXpath)).getText())) {
+						//wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.xpath(dateXpath)));
+						List<WebElement> dates = driver.findElements(By.xpath(dateXpath));
+						for (WebElement date : dates) {
+							
+							//System.out.println("The entered Date is :"+day);
+							//System.out.println("The Current Calendar Date is :"+date.getAttribute("innerHTML"));
+							//System.out.println("The status value is :"+date.getAttribute("innerHTML").equals(day));
+							
+							if (date.getAttribute("innerHTML").equals(day)) {
+								date.click();
+								break;
+							}
+						}
+					}
+				} else if (month_difference > 0) {
+					builder.moveToElement(driver.findElement(By.xpath(prevXpath))).build().perform();
+					while (true) {
+						driver.findElement(By.xpath(prevButtonXpath)).click();
+						if (month_year.equals(driver.findElement(By.xpath(monthYearXpath)).getText())) {
+							wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.xpath(dateXpath)));
+							List<WebElement> dates = driver.findElements(By.xpath(dateXpath));
+							for (WebElement date : dates) {
+								if (date.getAttribute("innerHTML").equals(day)) {
+									date.click();
+									break;
+								}
+							}
+							break;
+						}
+					}
+				} else if (month_difference < 0) {
+					builder.moveToElement(driver.findElement(By.xpath(nextXpath))).build().perform();
+					while (true) {
+						driver.findElement(By.xpath(nextButtonXpath)).click();
+						if (month_year.equals(driver.findElement(By.xpath(monthYearXpath)).getText())) {
+							wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.xpath(dateXpath)));
+							List<WebElement> dates = driver.findElements(By.xpath(dateXpath));
+							for (WebElement date : dates) {
+								if (date.getAttribute("innerHTML").equals(day)) {
+									date.click();
+									break;
+								}
+							}
+							break;
+						}
+					}
+				}
+			}
+			reportStep("Entered date " + enteredDate + " has been selected successfully", "PASS");
+		} catch (Exception e) {
+			reportStep("Entered date " + enteredDate + " has not been selected, day might be a weekend", "FAIL");
+		}
+	}
+	
+	//FOR WEEKEND DATES
+	public void selectWeekendDate(String enteredDate) {
+		try {
+			String month_year, day, calendar_month;
+			int entered_year, entered_month, calendar_year, year_difference, calendar_month_number, month_difference;
+
+			String nextXpath = "//div[@class='datePickerNextButton datePickerNextButton-up']/div[@data-automation-id='icon']";
+			String nextButtonXpath = "//div[@class='datePickerNextButton datePickerNextButton-up-hovering']/div[@data-automation-id='icon']";
+			String prevXpath = "//div[@class='datePickerPreviousButton datePickerPreviousButton-up']/div[@data-automation-id='icon']";
+			String prevButtonXpath = "//div[@class='datePickerPreviousButton datePickerPreviousButton-up-hovering']/div[@data-automation-id='icon']";
+			String dateXpath = "//table[@class='datePickerDays']/tbody/tr/td/div[@class='datePickerDay datePickerDayIsWeekend ']";
+			String monthYearXpath = "//td[@class='datePickerMonth']";
+			String todayDateXpath = "//div[@class='datePickerDay  datePickerDayIsToday  datePickerDayIsValue ']";
+
+			WebDriverWait wait = new WebDriverWait(driver, 20);
+			Actions builder = new Actions(driver);
+
+			Date d = new Date(enteredDate);
+			SimpleDateFormat dt = new SimpleDateFormat("d/MMMM/yyyy");
+			String date_entered = dt.format(d);
+			String[] splitter = date_entered.split("/");
+			String[] splitter_or = enteredDate.split("/");
+
+			day = splitter[0];
+			entered_year = Integer.parseInt(splitter[2]);
+			entered_month = Integer.parseInt(splitter_or[0]);
+			month_year = splitter[1] + " " + splitter[2];
+
+			String actual_month = driver.findElement(By.xpath(monthYearXpath)).getText();
+			String split2[] = actual_month.split(" ");
+			calendar_year = Integer.parseInt(split2[1]);
+			calendar_month = split2[0];
+
+			year_difference = calendar_year - entered_year;
+
+			Date date1 = new SimpleDateFormat("MMMM").parse(calendar_month);
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(date1);
+			calendar_month_number = cal.get(Calendar.MONTH) + 1;
+			
+			Calendar cal1 = Calendar.getInstance();
+			cal1.setTime(d);
+
+			month_difference = calendar_month_number - entered_month;
+
+			if (year_difference != 0) {
+				if (year_difference > 0) {
+					builder.moveToElement(driver.findElement(By.xpath(prevXpath))).build().perform();
+					while (true) {
+						driver.findElement(By.xpath(prevButtonXpath)).click();
+						if (month_year.equals(driver.findElement(By.xpath(monthYearXpath)).getText())) {
+							
+							wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.xpath(dateXpath)));
+							List<WebElement> dates = driver.findElements(By.xpath(dateXpath));
+							for (WebElement date : dates) {
+								if (date.getAttribute("innerHTML").equals(day)) {
+									date.click();
+									break;
+								}
+							}
+							break;
+						}
+					}
+				} else if (year_difference < 0) {
+					builder.moveToElement(driver.findElement(By.xpath(nextXpath))).build().perform();
+					while (true) {
+						driver.findElement(By.xpath(nextButtonXpath)).click();
+						if (month_year.equals(driver.findElement(By.xpath(monthYearXpath)).getText())) {
+							wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.xpath(dateXpath)));
+							List<WebElement> dates = driver.findElements(By.xpath(dateXpath));
+							for (WebElement date : dates) {
+								if (date.getAttribute("innerHTML").equals(day)) {
+									date.click();
+									break;
+								}
+							}
+							break;
+						}
+					}
+				}
+			} else {
+				if (month_difference == 0) {
+					if (enteredDate.equals(new SimpleDateFormat("MM/dd/YYYY").format(new Date()))) {						
+						wait = new WebDriverWait(driver, 10);
+						wait.until(ExpectedConditions.elementToBeClickable(By.xpath(todayDateXpath)));
+						driver.findElement(By.xpath(todayDateXpath)).click();
+						}
+					else if (month_year.equals(driver.findElement(By.xpath(monthYearXpath)).getText())) {
+						wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.xpath(dateXpath)));
+						List<WebElement> dates = driver.findElements(By.xpath(dateXpath));
+						for (WebElement date : dates) {
+							if (date.getAttribute("innerHTML").equals(day)) {
+								date.click();
+								break;
+							}
+						}
+					}
+				} else if (month_difference > 0) {
+					builder.moveToElement(driver.findElement(By.xpath(prevXpath))).build().perform();
+					while (true) {
+						driver.findElement(By.xpath(prevButtonXpath)).click();
+						if (month_year.equals(driver.findElement(By.xpath(monthYearXpath)).getText())) {
+							wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.xpath(dateXpath)));
+							List<WebElement> dates = driver.findElements(By.xpath(dateXpath));
+							for (WebElement date : dates) {
+								if (date.getAttribute("innerHTML").equals(day)) {
+									date.click();
+									break;
+								}
+							}
+							break;
+						}
+					}
+				} else if (month_difference < 0) {
+					builder.moveToElement(driver.findElement(By.xpath(nextXpath))).build().perform();
+					while (true) {
+						driver.findElement(By.xpath(nextButtonXpath)).click();
+						if (month_year.equals(driver.findElement(By.xpath(monthYearXpath)).getText())) {
+							wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.xpath(dateXpath)));
+							List<WebElement> dates = driver.findElements(By.xpath(dateXpath));
+							for (WebElement date : dates) {
+								if (date.getAttribute("innerHTML").equals(day)) {
+									date.click();
+									break;
+								}
+							}
+							break;
+						}
+					}
+				}
+			}
+			reportStep("Entered date " + enteredDate + " has been selected successfully", "PASS");
+		} catch (Exception e) {
+			reportStep("Entered date " + enteredDate + " has not been selected, day might be a weekend", "FAIL");
+		}
+	}
+	
+	/*************************************************METHOD TO SELECT DATE FROM CALENDAR************************************/
+	
+	public void selectDate(String enteredDate) {
+		try {
+			String month_year, day, calendar_month;
+			int entered_year, entered_month, calendar_year, year_difference, calendar_month_number, month_difference;
+
+			String nextXpath = "//div[@class='datePickerNextButton datePickerNextButton-up']/div[@data-automation-id='icon']";
+			String nextButtonXpath = "//div[@class='datePickerNextButton datePickerNextButton-up-hovering']/div[@data-automation-id='icon']";
+			String prevXpath = "//div[@class='datePickerPreviousButton datePickerPreviousButton-up']/div[@data-automation-id='icon']";
+			String prevButtonXpath = "//div[@class='datePickerPreviousButton datePickerPreviousButton-up-hovering']/div[@data-automation-id='icon']";
+			String dateWeekDayXpath = "//table[@class='datePickerDays']/tbody/tr/td/div[@class='datePickerDay ']";
+			String dateWeekendXpath = "//table[@class='datePickerDays']/tbody/tr/td/div[@class='datePickerDay datePickerDayIsWeekend ']";
+			String monthYearXpath = "//td[@class='datePickerMonth']";
+			String todayDateXpath = "//div[@class='datePickerDay  datePickerDayIsToday  datePickerDayIsValue ']";
+
+			WebDriverWait wait = new WebDriverWait(driver, 20);
+			Actions builder = new Actions(driver);
+
+			// DATE PICKER
+
+			Date d = new Date(enteredDate);
+			SimpleDateFormat dt = new SimpleDateFormat("d/MMMM/yyyy");
+
+			String date_entered = dt.format(d);
+			String[] splitter = date_entered.split("/");
+			String[] splitter_or = enteredDate.split("/");
+
+			day = splitter[0];
+			entered_year = Integer.parseInt(splitter[2]);
+			entered_month = Integer.parseInt(splitter_or[0]);
+			month_year = splitter[1] + " " + splitter[2];
+			
+			String actual_month = driver.findElement(By.xpath(monthYearXpath)).getText();
+			String split2[] = actual_month.split(" ");
+			calendar_year = Integer.parseInt(split2[1]);
+			calendar_month = split2[0];
+			year_difference = calendar_year - entered_year;
+			
+			Date date1 = new SimpleDateFormat("MMMM").parse(calendar_month);
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(date1);
+			calendar_month_number = cal.get(Calendar.MONTH) + 1;
+
+			Calendar cal1 = Calendar.getInstance();
+			cal1.setTime(d);
+
+			month_difference = calendar_month_number - entered_month;
+
+			if (year_difference != 0) 
+			{				
+				if (year_difference > 0) 
+				{
+					while (true)
+					{
+						builder.moveToElement(driver.findElement(By.xpath("(//td[text()='S'])[1]"))).build().perform();
+						builder.moveToElement(driver.findElement(By.xpath(prevXpath))).build().perform();
+						driver.findElement(By.xpath(prevButtonXpath)).click();
+						
+						if (month_year.equals(driver.findElement(By.xpath(monthYearXpath)).getText()))
+						{
+							if ((cal1.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY)|| (cal1.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY)) 
+							{
+								wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.xpath(dateWeekendXpath)));
+								List<WebElement> dates = driver.findElements(By.xpath(dateWeekendXpath));
+								for (WebElement date : dates) {
+									if (date.getAttribute("innerHTML").equals(day)) {
+										Thread.sleep(2000);
+										date.click();
+										break;
+									}
+								}
+							}
+							else 
+							{
+								wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.xpath(dateWeekDayXpath)));
+								List<WebElement> dates = driver.findElements(By.xpath(dateWeekDayXpath));
+								for (WebElement date : dates) {
+									if (date.getAttribute("innerHTML").equals(day)) {
+										Thread.sleep(2000);
+										date.click();
+										break;
+									}
+								}
+							}
+							break;
+						}
+					}
+				}
+				else if (year_difference < 0) 
+				{
+					while (true) 
+					{
+						builder.moveToElement(driver.findElement(By.xpath("(//td[text()='S'])[2]"))).build().perform();
+						builder.moveToElement(driver.findElement(By.xpath(nextXpath))).build().perform();
+						driver.findElement(By.xpath(nextButtonXpath)).click();
+						
+						if (month_year.equals(driver.findElement(By.xpath(monthYearXpath)).getText())) 
+						{
+							if ((cal1.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY)|| (cal1.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY)) 
+							{
+								wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.xpath(dateWeekendXpath)));
+								List<WebElement> dates = driver.findElements(By.xpath(dateWeekendXpath));
+								for (WebElement date : dates) {
+									if (date.getAttribute("innerHTML").equals(day)) {
+										Thread.sleep(2000);
+										date.click();
+										break;
+									}
+								}
+							}
+							else 
+							{
+								wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.xpath(dateWeekDayXpath)));
+								List<WebElement> dates = driver.findElements(By.xpath(dateWeekDayXpath));
+								for (WebElement date : dates) {
+									if (date.getAttribute("innerHTML").equals(day)) {
+										Thread.sleep(2000);
+										date.click();
+										break;
+									}
+								}
+							}
+							break;
+						}
+					}
+				}
+			} 
+			else 
+			{
+				if (month_difference == 0) 
+				{
+					if (enteredDate.equals(new SimpleDateFormat("MM/dd/YYYY").format(new Date()))) 
+					{
+						wait = new WebDriverWait(driver, 10);
+						wait.until(ExpectedConditions.elementToBeClickable(By.xpath(todayDateXpath)));
+						driver.findElement(By.xpath(todayDateXpath)).click();
+					}
+					
+					else if (month_year.equals(driver.findElement(By.xpath(monthYearXpath)).getText())) 
+					{
+						if ((cal1.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY)|| (cal1.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY)) 
+						{
+							wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.xpath(dateWeekendXpath)));
+							List<WebElement> dates = driver.findElements(By.xpath(dateWeekendXpath));
+							for (WebElement date : dates) {
+								if (date.getAttribute("innerHTML").equals(day)) {
+									Thread.sleep(2000);
+									date.click();
+									break;
+								}
+							}
+						} 
+						else
+						{
+							wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.xpath(dateWeekDayXpath)));
+							List<WebElement> dates = driver.findElements(By.xpath(dateWeekDayXpath));
+							for (WebElement date : dates) {
+								if (date.getAttribute("innerHTML").equals(day)) {
+									Thread.sleep(2000);
+									date.click();
+									break;
+								}
+							}
+						}
+					}
+				} 
+				else if (month_difference > 0)
+				{
+					while (true)
+					{
+						builder.moveToElement(driver.findElement(By.xpath("(//td[text()='S'])[1]"))).build().perform();
+						builder.moveToElement(driver.findElement(By.xpath(prevXpath))).build().perform();
+						driver.findElement(By.xpath(prevButtonXpath)).click();
+						
+						if (month_year.equals(driver.findElement(By.xpath(monthYearXpath)).getText())) 
+						{
+							if ((cal1.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY)|| (cal1.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY)) 
+							{
+								wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.xpath(dateWeekendXpath)));
+								List<WebElement> dates = driver.findElements(By.xpath(dateWeekendXpath));
+								for (WebElement date : dates) {
+									if (date.getAttribute("innerHTML").equals(day)) {
+										Thread.sleep(2000);
+										date.click();
+										break;
+									}
+								}
+							} 
+							else 
+							{
+								wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.xpath(dateWeekDayXpath)));
+								List<WebElement> dates = driver.findElements(By.xpath(dateWeekDayXpath));
+								for (WebElement date : dates) {
+									if (date.getAttribute("innerHTML").equals(day)) {
+										Thread.sleep(2000);
+										date.click();
+										break;
+									}
+								}
+							}
+							
+							break;
+						}
+					}
+				} 
+				else if (month_difference < 0) 
+				{
+					while (true) 
+					{
+						builder.moveToElement(driver.findElement(By.xpath("(//td[text()='S'])[2]"))).build().perform();
+						builder.moveToElement(driver.findElement(By.xpath(nextXpath))).build().perform();
+						driver.findElement(By.xpath(nextButtonXpath)).click();
+						
+						if (month_year.equals(driver.findElement(By.xpath(monthYearXpath)).getText())) 
+						{
+							if ((cal1.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY)|| (cal1.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY)) 
+							{
+								wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.xpath(dateWeekendXpath)));
+								List<WebElement> dates = driver.findElements(By.xpath(dateWeekendXpath));
+								for (WebElement date : dates) {
+									if (date.getAttribute("innerHTML").equals(day)) {
+										Thread.sleep(2000);
+										date.click();
+										break;
+									}
+								}
+							} 
+							else 
+							{
+								wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.xpath(dateWeekDayXpath)));
+								List<WebElement> dates = driver.findElements(By.xpath(dateWeekDayXpath));
+								for (WebElement date : dates) {
+									if (date.getAttribute("innerHTML").equals(day)) {
+										Thread.sleep(2000);
+										date.click();
+										break;
+									}
+								}
+							}
+							
+							break;
+						}
+					}
+				}
+			}
+			reportStep("Entered date " + enteredDate + " has been selected successfully", "PASS");
+		} catch (Exception e) {
+			reportStep("Entered date " + enteredDate + " has not been selected", "FAIL");
+		}
+	}	
+	
+	/**
+	 * ==================================================================================================================================================
+	 * IMPLEMENTAION OF CLICK ACTION ON LIST ITEM / BOOTSTRAP DROPDOWN OR LIST
+	 */
+	public void clickSearchResultByXpath(String xpath, String searchResultItem) {
+		try {
+			wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.xpath(xpath)));
+			List<WebElement> serchList = driver.findElements(By.xpath(xpath));
+			for (WebElement ele : serchList) {
+				if (ele.getAttribute("innerHTML").equals(searchResultItem)) {
+					ele.click();
+					reportStep("The element with value :" + searchResultItem + " is clicked", "PASS");
+					break;
+				}
+			}
+			
+		} catch (Exception e) {
+			reportStep("The element with value :" + searchResultItem + " is not clicked", "FAIL");
+		}
+	}
+
+	public void clickSearchResultContainsByXpath(String xpath, String searchResultItem) {
+		try {
+			wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.xpath(xpath)));
+			List<WebElement> serchList = driver.findElements(By.xpath(xpath));
+			for (WebElement ele : serchList) {
+				if (ele.getAttribute("innerHTML").contains(searchResultItem)) {
+					ele.click();
+					reportStep("The element with value :" + searchResultItem + " is clicked", "PASS");
+					break;
+				}
+			}
+			
+		} catch (Exception e) {
+			reportStep("The element with value :" + searchResultItem + " is not clicked", "FAIL");
+		}
+	}
+	
+	public void scrollAndClickTheSearchResultByXpath(String xpath, String searchResultItem) {
+		try {
+			wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.xpath(xpath)));
+			List<WebElement> serchList = driver.findElements(By.xpath(xpath));
+			for (WebElement ele : serchList) {
+				if (ele.getAttribute("innerHTML").equals(searchResultItem)) {
+					scrollIntoViewByElement(ele);
+					ele.click();
+					reportStep("The element with value :" + searchResultItem + " is clicked", "PASS");
+					break;
+				}
+			}
+			
+		} catch (Exception e) {
+			reportStep("The element with value :" + searchResultItem + " is not clicked", "FAIL");
+		}
+	}
+	/******************************************************FILE UPLOAD*******************************************************/
+	
+	public void fileUploadBySendKeys(String xpath, String filePath) {
+		try {
+			
+			WebElement uploadElement = driver.findElement(By.xpath(xpath));
+			uploadElement.sendKeys(filePath);			
+			reportStep("The element with value :" + filePath + " is valid and the file is uploaded", "PASS");
+		} catch (Exception e) {
+			reportStep("The element with value :" + filePath + " is not valid", "FAIL");
+		}
+	}
+	
+	
+	public void fileUploadByAutoIT(String filePath) {
+		try {
+			Runtime.getRuntime().exec(filePath+".exe");
+			Thread.sleep(2000);
+			reportStep("The element with value :" + filePath + " is valid and the file is uploaded", "PASS");
+		} catch (Exception e) {
+			reportStep("The element with value :" + filePath + " is not valid", "FAIL");
+		}
+	}
+	
+	
+	
+	
+	
+	
+	
+
+}
+
