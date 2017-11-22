@@ -1,0 +1,59 @@
+package aig.workday.library;
+
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.DataProvider;
+
+import aig.workday.config.DataInputProvider;
+import aig.workday.config.DataInputProviderColumn;
+
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.AfterTest;
+import org.testng.annotations.BeforeSuite;
+import org.testng.annotations.AfterSuite;
+
+public class WorkdayWrapper extends GenericWrapper {
+
+	public String browserNmae;
+	public String dataSheetName;
+
+	@BeforeSuite
+	public void beforeSuite() {
+		startResult();
+	}
+
+	@BeforeTest
+	public void beforeTest() {
+		loadObjects();
+	}
+
+	@BeforeMethod
+	public void beforeMethod() {
+		test = startTestCase(testCaseName, testDescription);
+		test.assignCategory(category);
+		test.assignAuthor(authors);
+		invokeApp(browserNmae);
+	}
+
+	@AfterMethod
+	public void afterMethod() {
+		endTestcase();
+		quiteBrowser();
+	}
+
+	@AfterTest
+	public void afterTest() {
+		unloadObjects();
+	}
+
+	@AfterSuite
+	public void afterSuite() {
+		endResult();
+	}
+
+	@DataProvider(name = "fetchData")
+	public Object[][] getData() {
+		return DataInputProvider.getSheet(dataSheetName);
+	}
+
+}
