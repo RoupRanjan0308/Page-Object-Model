@@ -1,0 +1,148 @@
+package aig.workday.library;
+
+public interface Wrapper 
+{
+	/**
+	 * @author Roupya Ranjan Bag
+	 *This Method can be use to Launch the given browser and maximize it and set the wait for 30 sec and load the url.
+	 *user has to pass two parameters i.e. "browser" and "url".
+	 *browser = it specifies on which browser user wants to launch e.g. chrome, FF or IE
+	 *url = URL of the Web Application.
+	 */
+	public void invokeApp(String browser);
+	/**
+	 * @author Roupya Ranjan Bag
+	 * This method can be use to enter the value to the text field with locator as id attribute.
+	 */	
+	public void enterById(String idValue, String data);
+	/**
+	 * @author Roupya Ranjan Bag
+	 * This method can be use to enter the value to the text field with locator as className attribute.
+	 */
+	public void enterByClassName(String classNameValue, String data);
+	/**
+	 * @author Roupya Ranjan Bag
+	 * This method can be use to enter the value to the text field with locator as name attribute.
+	 */
+	public void enterByName(String nameValue, String data);
+	/**
+	 * @author Roupya Ranjan Bag
+	 * This method can be use to enter the value to the text field with locator as xPath attribute.
+	 */
+	public void enterByXpath(String xpathValue, String data);
+	/**
+	 * @author Roupya Ranjan Bag
+	 * This method can be use to click the WebElement with locator as id.
+	 */
+	public void clickById(String idValue);
+	/**
+	 * @author Roupya Ranjan Bag
+	 * This method can be use to click the WebElement with locator as className.
+	 */
+	public void clickByClassName(String classNameValue);
+	/**
+	 * @author Roupya Ranjan Bag
+	 * This method can be use to click the WebElement with locator as name.
+	 */
+	public void clickByName(String nameValue);
+	/** @author robag
+	 * This method can be use to click the WebElement with locator as linkText.
+	 */
+	public void clickBylinkText(String linkTextValue);
+	/**
+	 * @author Roupya Ranjan Bag
+	 * This method can be use to click the WebElement with locator as xpath.
+	 */
+	public void clickByXpath(String xpathValue);
+	/**
+	 * @author Roupya Ranjan Bag
+	 * This method will verify the title of the page currently open.
+	 */
+	public boolean verifyTitle(String title );
+	/**
+	 * @author Roupya Ranjan Bag
+	 * This method can be use to Text present in the WebElement with locator id.
+	 */
+	public void verifyTextById(String idValue,String text );
+	/**
+	 * @author Roupya Ranjan Bag
+	 * This method can be use to Text present in the WebElement with locator xpath.
+	 */
+	public void verifyTextByXpath(String xpathValue,String text );
+	/**
+	 * @author Roupya Ranjan Bag
+	 * This method can be use to Text present in the WebElement with locator xpath.
+	 */
+	public void verifyTextContainsByXpath(String xpathValue,String text );
+	/**
+	 * @author Roupya Ranjan Bag
+	 * This method can be use to Text present in the WebElement with locator id.
+	 */
+	public void verifyTextContainsById(String idValue,String text );
+	/**
+	 * @author Roupya Ranjan Bag
+	 * This method can be use get the Text present in the WebElement using id attribute as locator.
+	 */
+	public String getTextById(String idValue);
+	/**
+	 * @author Roupya Ranjan Bag
+	 * This method can be use get the Text present in the WebElement using xpath attribute as locator.
+	 */
+	public String getTextByXapth(String xpathValue);
+	/**
+	 * @author Roupya Ranjan Bag
+	 * This method will select the drop down visible text using id attribute as locator.
+	 * @param id - The id(locator) of the drop down element
+	 * @param value -The value to be selected(visible text) from the drop down
+	 */
+	public void selectVisibleTextById(String idValue,String value);
+	/**
+	 * @author Roupya Ranjan Bag
+	 * This method will select the drop down visible text using index as id locator.
+	 * @param id - The id(locator) of the drop down element
+	 * @param value -The value to be selected(visible text) from the drop down
+	 */
+	public void selectIndexById(String idValue,String value);
+	/**
+	 * @author Roupya Ranjan Bag
+	 * This method will select the drop down visible text using index as id locator.
+	 * @param xpath - The xpath(locator) of the drop down element
+	 * @param value -The value to be selected(visible text) from the drop down
+	 */
+	public void selectIndexByXpath(String xpathValue, String data);
+	/**
+	 * @author Roupya Ranjan Bag
+	 * This method will switch to the parent window.
+	 */
+	public void SwitchToParentWindow();
+	/**
+	 * @author Roupya Ranjan Bag
+	 * This method will move the control to last window.
+	 */
+	public void SwitchToLasttWindow();
+	/**
+	 * @author Roupya Ranjan Bag
+	 * This method will accept the alert opened.
+	 */
+	public void acceptAlert();
+	/**
+	 * @author Roupya Ranjan Bag
+	 * This method will close the all the browsers opened.
+	 */
+	public void quiteBrowser();
+	/**
+	 * @author Roupya Ranjan Bag
+	 * This method will get text present in the alert opened.
+	 */
+	public void getAlertText();
+	/**
+	 * @author Roupya Ranjan Bag
+	 * This method will dismiss the alert opened.
+	 */
+	public void dismissAlert();
+	
+	public void mouseOverByLinkText(String linkTextValue);
+	
+	public void mouseOverByXpath(String xpathValue);
+
+}
