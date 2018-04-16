@@ -57,13 +57,6 @@ public class GenericWrapper extends Reporter implements Wrapper {
 			sUrl = prop.getProperty("URL");
 			userName = prop.getProperty("Username");
 			passWord = prop.getProperty("Password");
-			/*startProxyText = prop.getProperty("StartProxyText");
-			actAsHRSSProcessorID = prop.getProperty("ActAsHRSSProcessorID");
-			actAsHRSSProcessor = prop.getProperty("ActAsHRSSProcessor");
-			actAsHRSSApproverID = prop.getProperty("ActAsHRSSApproverID");
-			actAsHRSSApprover = prop.getProperty("ActAsHRSSApprover");
-			actAsLocalHRID = prop.getProperty("ActAsLocalHRID");
-			actAsLocalHR = prop.getProperty("ActAsLocalHR");*/
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
